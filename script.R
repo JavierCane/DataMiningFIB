@@ -100,9 +100,7 @@ summary(data)
 
 
 #Lab 3: Principal Component Analysis
-dcon <- data.frame (data$shopping_pt, data$time, data$location, data$car_age, data$age_oldest, data$age_youngest, data$duration_previous, data$cost)
-labels("Shopping_pt", "Time", "Location", "Car_age", "Age_oldest", "Age_youngest", "Duration_previous", "Cost")
-
+dcon <- data.frame ("Shopping_pt" = data$shopping_pt, "Time" = data$time, "Location" = data$location, "Car_age" = data$car_age, "Age_oldest" = data$age_oldest, "Age_youngest" = data$age_youngest, "Duration_previous" = data$duration_previous, "Cost" = data$cost)
 pc1 = prcomp(dcon, scale=T)
 
 # WHICH PERCENTAGE OF THE TOTAL INERTIA IS REPRESENTED IN SUBSPACES?
@@ -139,7 +137,7 @@ axis(side=2, pos= 0, labels = F, col="cyan")
 axis(side=4, pos= 0, labels = F, col="cyan")
 
 Phi = cor(dcon,Psi)
-plot(Phi[,1],Phi[,2],type="none",xlim=c(min(Phi[,1],0),max(Phi[,1],0)))
+plot(Phi[,1],Phi[,2],type="none",xlim=c(min(Phi[,1]-0.2,0),max(Phi[,1]+0.2,0)))
 axis(side=1, pos= 0, labels = F)
 axis(side=3, pos= 0, labels = F)
 axis(side=2, pos= 0, labels = F)
@@ -149,7 +147,7 @@ text(Phi[,1],Phi[,2],labels=etiq,col="darkblue")
 fm = round(max(abs(Psi[,1])))
 
 
-plot(Psi[,1],Psi[,2],col="gray", pch=20)
+plot(Psi[,1],Psi[,2],col="gray", xlim=range(-6:6), ylim=range(-4:4), pch=20)
 arrows(ze, ze, fm*U[,1], fm*U[,2], length = 0.07,col="red")
 text(fm*U[,1],fm*U[,2],labels=etiq,col="red")
 
@@ -193,7 +191,7 @@ axis(side=1, pos= 0, labels = F, col="darkgray")
 axis(side=3, pos= 0, labels = F, col="darkgray")
 axis(side=2, pos= 0, labels = F, col="darkgray")
 axis(side=4, pos= 0, labels = F, col="darkgray")
-
+legend("topright",c("1","2","3","4","Not Available"),pch=1,col=c(1,2,3,4,5,6))
 
 #Tipus de contracte
 tcon=data$married
@@ -202,6 +200,7 @@ axis(side=1, pos= 0, labels = F, col="darkgray")
 axis(side=3, pos= 0, labels = F, col="darkgray")
 axis(side=2, pos= 0, labels = F, col="darkgray")
 axis(side=4, pos= 0, labels = F, col="darkgray")
+legend("topright",c("Not married","Married"),pch=1,col=c(1,2,3,4,5,6))
 
 tcon=data$homeowner
 plot(Psi[,1],Psi[,2],col=tcon)
@@ -209,6 +208,7 @@ axis(side=1, pos= 0, labels = F, col="darkgray")
 axis(side=3, pos= 0, labels = F, col="darkgray")
 axis(side=2, pos= 0, labels = F, col="darkgray")
 axis(side=4, pos= 0, labels = F, col="darkgray")
+legend("topright",c("Does not owns a house","Owns a house"),pch=1,col=c(1,2,3,4,5,6))
 
 tcon=data$day
 plot(Psi[,1],Psi[,2],col=tcon)
@@ -217,7 +217,6 @@ axis(side=3, pos= 0, labels = F, col="darkgray")
 axis(side=2, pos= 0, labels = F, col="darkgray")
 axis(side=4, pos= 0, labels = F, col="darkgray")
 legend("topright",c("Dll","Dm", "Dc", "Dj", "Dv","Ds"),pch=1,col=c(1,2,3,4,5,6))
-
 
 #Lab 4: Feature selection & K-means
 
@@ -232,7 +231,7 @@ ks.test(x=data$shopping_pt, y='pnorm')
 for (i in 1:11) { pvalcon[i] <- (oneway.test(varc[[i]]~data$risk_factor))$p.value }
 
 pvalcon = matrix(pvalcon)
-#row.names(pvalcon) = c("Antig_feina","Plaç","Edat","Despeses","Ingressos","Patrimoni","Carrecs_pat","Import_sol","Preu_finan","Rati_fin","Estalvi")
+#row.names(pvalcon) = c("Antig_feina","Plaï¿½","Edat","Despeses","Ingressos","Patrimoni","Carrecs_pat","Import_sol","Preu_finan","Rati_fin","Estalvi")
 row.names(pvalcon) = c("Antiquity","Timing","Age","Expenditures","Incomes","Patrimonium","Loads","QuantityRequired","TargetPrice","RatioFin","SavingCap")
 
 # ORDERED LIST OF CONTINUOUS VARIABLES ACCORDING THEIR DEPENDENCE OF Dictamen
@@ -245,7 +244,7 @@ sort(pvalcon[,1])
 #
 
 pvalcat <- NULL
-#vark <- list(edatR,antigR,plaçR,despesesR,ingressosR,patrimoniR,carrecsR,importR,preuR,ratfinR,estalviR,Vivienda,Estado.civil,Registros,Tipo.trabajo)
+#vark <- list(edatR,antigR,plaï¿½R,despesesR,ingressosR,patrimoniR,carrecsR,importR,preuR,ratfinR,estalviR,Vivienda,Estado.civil,Registros,Tipo.trabajo)
 
 vark <- list(Vivienda,Estado.civil,Registros,Tipo.trabajo)
 
