@@ -110,7 +110,7 @@ summary(data)
 ####################################################### Lab 3: Principal Component Analysis #######################################################
 ###################################################################################################################################################
 
-dcon <- data.frame ("Shopping_pt" = data$shopping_pt, "Time" = data$time, "Location" = data$location, "Car_age" = data$car_age, "Age_oldest" = data$age_oldest, "Age_youngest" = data$age_youngest, "Duration_previous" = data$duration_previous, "Cost" = data$cost)
+dcon <- data.frame ("Shopping_pt" = data$shopping_pt, "Time" = data$time, "Car_age" = data$car_age, "Age_oldest" = data$age_oldest, "Age_youngest" = data$age_youngest, "Duration_previous" = data$duration_previous, "Cost" = data$cost)
 pc1 = prcomp(dcon, scale=T)
 
 # WHICH PERCENTAGE OF THE TOTAL INERTIA IS REPRESENTED IN SUBSPACES?
@@ -124,7 +124,7 @@ barplot(100*cumsum(pc1$sdev[1:dim(dcon)[2]]^2)/dim(dcon)[2])
 
 # SELECTION OF THE SIGIFICATIVE DIMENSIONS
 
-nd = 6
+nd = 5
 
 # STORAGE OF THE EIGENVALUES, EIGENVECTORS AND PROJECTIONS IN THE nd DIMENSIONS
 
@@ -232,10 +232,10 @@ legend("topright",c("Dll","Dm", "Dc", "Dj", "Dv","Ds"),pch=1,col=c(1,2,3,4,5,6))
 ######################################################## Lab 4: Feature selection & K-means #######################################################
 ###################################################################################################################################################
 
-dcat <- data.frame(data$record_type, data$group_size, data$day, data$homeowner, data$risk_factor, data$married_couple, data$C_previous, data$A, data$B, data$C, data$D, data$E, data$F, data$G)
-dict <- data.frame(data$shopping_pt, data$time, data$time, data$time, data$time, data$time)
+dcat <- data.frame(data$record_type, data$group_size, data$day, data$homeowner, data$risk_factor, data$married_couple, data$C_previous, data$B, data$C, data$D, data$E, data$F, data$G)
+dict <- data.frame(data$A)
 
-source("/Users/javierferrer/Documents/Uni/MD/assets/acm.r")
+source("/Users/javierferrer/Documents/Uni/MD/assets/clean_acm.r")
 
 ac1 <- acm(dcat,dict)
 
@@ -314,16 +314,16 @@ plot(h1)
 
 # WHERE ARE THER THE LEAPS? WHERE WILL YOU CUT THE DENDREOGRAM?, HOW MANY CLASSES WILL YOU OBTAIN?
 
-nc = 3
+nc = 4
 
 c1 <- cutree(h1,nc)
 
-c1[1:20]
+c1[1:20] # Mostramos los 20 primeros individuos clasificados en tres grupos
 
 # LETS SEE THE PARTITION VISUALLY
 
-plot(Psi[,1],Psi[,2],col=c1,main="Clustering of credit data in 3 classes")
-legend("topleft",c("c1","c2","c3"),pch=1,col=c(1:3))
+plot(Psi[,1],Psi[,2],col=c1,main="Clustering of insurance policy data in 4 classes")
+legend("topleft",c("c1","c2","c3","c4"),pch=1,col=c(1:4))
 
 #plot(FI[,1],FI[,2],col=c1,main="Clustering of credit data in 3 classes")
 #legend("topleft",c("c1","c2","c3"),pch=1,col=c(1:3))
@@ -332,7 +332,6 @@ legend("topleft",c("c1","c2","c3"),pch=1,col=c(1:3))
 
 cdg <- aggregate(as.data.frame(factors),list(c1),mean)[,2:(nd+1)]
 cdg
-
 
 Bss <- sum(rowSums(cdg^2)*as.numeric(table(c1)))
 
