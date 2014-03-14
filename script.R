@@ -14,6 +14,7 @@ data$record_type <- as.factor(data$record_type) # Factor -> Qualitative
 data$group_size <- as.factor(data$group_size)
 data$day <- as.factor(data$day)
 data$time <- as.numeric(data$time) #Numeric -> Quantitative
+data$location <- as.factor(data$location)
 data$homeowner <- as.factor(data$homeowner)
 data$risk_factor <- as.factor(data$risk_factor)
 data$married_couple <- as.factor(data$married_couple)
@@ -231,51 +232,206 @@ legend("topright",c("Dll","Dm", "Dc", "Dj", "Dv","Ds"),pch=1,col=c(1,2,3,4,5,6))
 ######################################################## Lab 4: Feature selection & K-means #######################################################
 ###################################################################################################################################################
 
-pvalcon <- NULL
+dcat <- data.frame(data$record_type, data$group_size, data$day, data$homeowner, data$risk_factor, data$married_couple, data$C_previous, data$A, data$B, data$C, data$D, data$E, data$F, data$G)
+dict <- data.frame(data$shopping_pt, data$time, data$time, data$time, data$time, data$time)
 
-varc <- list(data$shopping_pt, data$record_type, data$day, data$time, data$state, data$location, data$group_size, data$homeowner, data$car_age, data$car_value, data$risk_factor, data$age_oldest, data$age_youngest, data$married_couple, data$C_previous, data$duration_previous, data$A, data$B, data$C, data$D, data$E, data$F, data$G, data$cost)
+source("/Users/javierferrer/Documents/Uni/MD/assets/acm.r")
 
-qqnorm(data$shopping_pt)
-qqline(data$shopping_pt)
+ac1 <- acm(dcat,dict)
 
-for (i in 1:11) { 
-	pvalcon[i] <- (oneway.test(varc[[i]]~data$risk_factor))$p.value
-}
+i <- 1
 
-pvalcon = matrix(pvalcon)
-#row.names(pvalcon) = c("Antig_feina","Pla�","Edat","Despeses","Ingressos","Patrimoni","Carrecs_pat","Import_sol","Preu_finan","Rati_fin","Estalvi")
-row.names(pvalcon) = c("Antiquity","Timing","Age","Expenditures","Incomes","Patrimonium","Loads","QuantityRequired","TargetPrice","RatioFin","SavingCap")
+while (ac1$vaps[i] > 1/ncol(dcat)) i = i+1
 
-# ORDERED LIST OF CONTINUOUS VARIABLES ACCORDING THEIR DEPENDENCE OF Dictamen
+nd = i-1
 
-sort(pvalcon[,1])
+FI= ac1$rs[,1:nd]
+
+factors=data.frame(Psi, FI)
+
+objects(factors)
+
+# KMEANS RUN, BUT HOW MANY CLASSES?
+
+k1 <- kmeans(factors,5)
+
+attributes(k1)
+
+k1$size
+
+k1$withinss
+
+k1$centers
+
+# LETS COMPUTE THE DECOMPOSITION OF INERTIA
+
+Bss <- sum(rowSums(k1$centers^2)*k1$size)
+Bss
+Wss <- sum(k1$withinss)
+Wss
+Tss <- sum(rowSums(Psi^2))
+Tss
+
+Bss+Wss
+
+Ib1 <- 100*Bss/(Bss+Wss)
+Ib1
+
+# LETS REPEAT THE KMEANS RUN WITH K=5
+
+k2 <- kmeans(factors,5)
+k2$size
+
+Bss <- sum(rowSums(k2$centers^2)*k2$size)
+Bss
+Wss <- sum(k2$withinss)
+Wss
+
+Ib2 <- 100*Bss/(Bss+Wss)
+Ib2
+
+# WHY WE HAVE OBTAINED DIFFERENT RESULTS?, AND WHICH RUN IS BETTER?
+
+# NOW TRY K=8
+
+k3 <- kmeans(factors,8)
+k3$size
+
+Bss <- sum(rowSums(k3$centers^2)*k3$size)
+Wss <- sum(k3$withinss)
+
+Ib3 <- 100*Bss/(Bss+Wss)
+Ib3
+
+
+# HIERARCHICAL CLUSTERING
+
+d  <- dist(factors)
+h1 <- hclust(d,method="ward")  # NOTICE THE COST
+plot(h1)
+
+# BUT WE ONLY NEED WHERE THERE ARE THE LEAPS OF THE HEIGHT
+
+# WHERE ARE THER THE LEAPS? WHERE WILL YOU CUT THE DENDREOGRAM?, HOW MANY CLASSES WILL YOU OBTAIN?
+
+nc = 3
+
+c1 <- cutree(h1,nc)
+
+c1[1:20]
+
+# LETS SEE THE PARTITION VISUALLY
+
+plot(Psi[,1],Psi[,2],col=c1,main="Clustering of credit data in 3 classes")
+legend("topleft",c("c1","c2","c3"),pch=1,col=c(1:3))
+
+#plot(FI[,1],FI[,2],col=c1,main="Clustering of credit data in 3 classes")
+#legend("topleft",c("c1","c2","c3"),pch=1,col=c(1:3))
+
+# LETS SEE THE QUALITY OF THE HIERARCHICAL PARTITION
+
+cdg <- aggregate(as.data.frame(factors),list(c1),mean)[,2:(nd+1)]
+cdg
+
+
+Bss <- sum(rowSums(cdg^2)*as.numeric(table(c1)))
+
+Ib4 <- 100*Bss/Tss
+Ib4
+
+# LETS CONSOLIDATE THE PARTITION
+
+k5 <- kmeans(Psi,centers=cdg)
+k5$size
+
+Bss <- sum(rowSums(k5$centers^2)*k5$size)
+Wss <- sum(k5$withinss)
+
+Ib5 <- 100*Bss/(Bss+Wss)
+Ib5
 
 #
-# FEATURE SELECTION: FOR CATEGORICAL VARIABLES  CHI-SQUARE
-# RESPONSE VARIABLE: DICTAMEN
+# CLUSTERING OF LARGE DATA SETS
 #
 
-pvalcat <- NULL
-#vark <- list(edatR,antigR,pla�R,despesesR,ingressosR,patrimoniR,carrecsR,importR,preuR,ratfinR,estalviR,Vivienda,Estado.civil,Registros,Tipo.trabajo)
+# FIRST 2 KMEANS WITH K=14
 
-vark <- list(Vivienda,Estado.civil,Registros,Tipo.trabajo)
+n1 = 14
 
-for (i in 1:4) { pvalcat[i] <- (chisq.test(vark[[i]],Dictamen))$p.value }
+k1 <- kmeans(factors,n1)
+k2 <- kmeans(factors,n1)
 
-pvalcat = matrix(pvalcat)
-row.names(pvalcat) = c("Housing","CivilStatus","Registers","WorkingType")
+table(k2$cluster,k1$cluster)
+
+clas <- (k2$cluster-1)*n1+k1$cluster
+
+freq <- table(clas)
+freq[1:10]
+
+# WHAT DO WE HAVE IN VECTOR freq?
+
+cdclas <- aggregate(as.data.frame(Psi),list(clas),mean)[,2:(nd+1)]
+
+# SECOND HIERARCHICAL CLUSTERING UPON THE CENTROIDS OF CROSSING THE 2 KMEANS PARTITIONS
+
+d2 <- dist(cdclas)
+h2 <- hclust(d2,method="ward",members=freq)  # COMPARE THE COST
+
+plot(h2)
+barplot(h2$height[(dim(cdclas)[1]-40):(dim(cdclas)[1]-1)])
+
+c2 <- cutree(h2,nc)
+
+# WARNING c2 NOT ALLOW TO CLASSIFY DIRECTLY THE 4446 INDIVIDUALS BUT THE ELEMENTS OF freq
+# WARNING cdclas CONTAINS THE COORDINATES OF THE CROSSINGS BUT THEY NEED TO BE WEIGHED BY  freq
+
+#cdg <- aggregate(cdclas,list(c2),mean)[,2:(nd+1)]  ALL ELEMENTS COUNT EQUAL
+
+cdg <- aggregate((diag(freq/sum(freq)) %*% as.matrix(cdclas)),list(c2),sum)[,2:(nd+1)]
+cdg
 
 
+# CONSOLIDATION
 
-# ORDERED LIST OF CATEGORICAL VARIABLES ACCORDING THEIR DEPENDENCE OF Dictamen
+k6 <- kmeans(Psi,centers=cdg)
+k6$size
 
-sort(pvalcat[,1])
+Bss <- sum(rowSums(k6$centers^2)*k6$size)
+Wss <- sum(k6$withinss)
 
-#let's have a global look with the whole set of variables
-pval<-NULL
-pval=append(pvalcat, pvalcon)
-pval = matrix(pval)
-row.names(pval)= c("Antiquity","Timing","Age","Expenditures","Incomes","Patrimonium","Loads","QuantityRequired","TargetPrice","RatioFin","SavingCap","Housing","CivilStatus","Registers","WorkingType")
+Ib6 <- 100*Bss/(Bss+Wss)
+Ib6
 
 
-sort(pval[,1])
+# PROBALISTIC CLUSTERING 
+
+library(mclust)
+
+emc <- Mclust(Psi,G=7:9) # AGAIN THE COST
+
+print(emc)
+
+attributes(emc)
+
+# NOW FOR EACH INDIVIDUAL WE HAVE A PROBABILITY TO BELONG TO EACH CLASS
+
+emc$z[1:10,]
+
+# LETS SEE TO WHICH CLASS IS ASSGINED EVERY INDIVIDUAL (BY MAX PROB)
+
+emc$classification[1:10]
+
+# LETS COMPUTE THE QUALITY OF THE PARTITION
+
+cdg <- aggregate(as.data.frame(Psi),list(emc$classification),mean)[,2:(nd+1)]
+cdg
+
+Bss <- sum(rowSums(cdg^2)*as.numeric(table(c1)))
+
+Ib7 <- 100*Bss/Tss
+Ib7
+
+# LETS SEE THE PARTITION VISUALLY
+
+plot(Psi[,1],Psi[,2],col=emc$classification,main="Clustering of credit data in 8 classes")
+legend("topleft",c("c1","c2","c3","c4","c5","c6","c7","c8"),pch=1,col=c(1:8))
