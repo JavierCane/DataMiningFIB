@@ -5,7 +5,10 @@
 data <- read.table("/Users/javierferrer/Documents/Uni/MD/data/state_varios-oldest_ge_45-youngest_le_27-5910_reg.csv",sep=";",header=TRUE)
 
 
-#Lab 1: Data load
+###################################################################################################################################################
+################################################################ Lab 1: Data load #################################################################
+###################################################################################################################################################
+
 #Treating variables as qualitative/quantitative
 data$record_type <- as.factor(data$record_type) # Factor -> Qualitative
 data$group_size <- as.factor(data$group_size)
@@ -25,7 +28,11 @@ data$G <- as.factor(data$G)
 
 summary(data)
 
-#Lab 2: Preprocessing
+
+###################################################################################################################################################
+############################################################ Lab 2: Preprocessing ############################################################
+###################################################################################################################################################
+
 hist(data$customer_ID)
 hist(data$shopping_pt) #1
 plot(data$record_type)
@@ -98,8 +105,10 @@ data$duration_previous <- dura_previ
 
 summary(data)
 
+###################################################################################################################################################
+####################################################### Lab 3: Principal Component Analysis #######################################################
+###################################################################################################################################################
 
-#Lab 3: Principal Component Analysis
 dcon <- data.frame ("Shopping_pt" = data$shopping_pt, "Time" = data$time, "Location" = data$location, "Car_age" = data$car_age, "Age_oldest" = data$age_oldest, "Age_youngest" = data$age_youngest, "Duration_previous" = data$duration_previous, "Cost" = data$cost)
 pc1 = prcomp(dcon, scale=T)
 
@@ -218,7 +227,9 @@ axis(side=2, pos= 0, labels = F, col="darkgray")
 axis(side=4, pos= 0, labels = F, col="darkgray")
 legend("topright",c("Dll","Dm", "Dc", "Dj", "Dv","Ds"),pch=1,col=c(1,2,3,4,5,6))
 
-#Lab 4: Feature selection & K-means
+###################################################################################################################################################
+######################################################## Lab 4: Feature selection & K-means #######################################################
+###################################################################################################################################################
 
 pvalcon <- NULL
 
@@ -226,9 +237,10 @@ varc <- list(data$shopping_pt, data$record_type, data$day, data$time, data$state
 
 qqnorm(data$shopping_pt)
 qqline(data$shopping_pt)
-ks.test(x=data$shopping_pt, y='pnorm')
 
-for (i in 1:11) { pvalcon[i] <- (oneway.test(varc[[i]]~data$risk_factor))$p.value }
+for (i in 1:11) { 
+	pvalcon[i] <- (oneway.test(varc[[i]]~data$risk_factor))$p.value
+}
 
 pvalcon = matrix(pvalcon)
 #row.names(pvalcon) = c("Antig_feina","Pla�","Edat","Despeses","Ingressos","Patrimoni","Carrecs_pat","Import_sol","Preu_finan","Rati_fin","Estalvi")
