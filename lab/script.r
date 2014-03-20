@@ -160,8 +160,8 @@ fm = round(max(abs(Psi[,1])))
 eje_horizontal = 1
 eje_vertical   = 2
 
-rango_horizontal = 6
-rango_vertical = 5
+rango_horizontal = 0.6
+rango_vertical = 1
 
 # plot(Psi[,eje_horizontal],Psi[,eje_vertical],col="white", xlim=range(-6:6), ylim=range(-4:4), pch=20)
 plot( Psi[,eje_horizontal],Psi[ ,eje_vertical ],col = "white", xlim = range( -rango_horizontal: rango_horizontal), ylim = range( -rango_vertical: rango_vertical), pch = 20)
