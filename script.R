@@ -156,11 +156,54 @@ arrows(ze, ze, Phi[,1], Phi[,2], length = 0.07,col="blue")
 text(Phi[,1],Phi[,2],labels=etiq,col="darkblue")
 fm = round(max(abs(Psi[,1])))
 
+# Proyectar centroides de variables cualitativas sobre ejes 1 y 2 (las variables más importantes: 1: cost y duration_previous, 2: age_oldest y age_youngest)
+eje_horizontal = 1
+eje_vertical   = 2
 
-plot(Psi[,1],Psi[,2],col="gray", xlim=range(-6:6), ylim=range(-4:4), pch=20)
-arrows(ze, ze, fm*U[,1], fm*U[,2], length = 0.07,col="red")
-text(fm*U[,1],fm*U[,2],labels=etiq,col="red")
+# plot(Psi[,eje_horizontal],Psi[,eje_vertical],col="white", xlim=range(-6:6), ylim=range(-4:4), pch=20)
+plot( Psi[,eje_horizontal],Psi[ ,eje_vertical ],col = "white", xlim = range( -1:1), ylim = range( -0.5:0.5), pch = 20)
+arrows( ze, ze, fm * U[, eje_horizontal], fm * U[ , eje_vertical ], length = 0.07,col = "red")
+text( fm * U[, eje_horizontal],fm * U[ , eje_vertical ],labels = etiq,col = "red")
 
+fdic1 = tapply( Psi[,eje_horizontal],data$married_couple,mean)
+fdic2 = tapply( Psi[,eje_vertical],data$married_couple,mean)
+lines( fdic1, fdic2, pch = 16, col = "yellow", labels = levels( data$married_couple))
+text( fdic1, fdic2, labels = c( "single", "married" ), col = "yellow" )
+
+fdic1 = tapply( Psi[,eje_horizontal],data$day,mean)
+fdic2 = tapply( Psi[,eje_vertical],data$day,mean)
+lines( fdic1, fdic2, pch = 16, col = "blue", labels = levels( data$day))
+text( fdic1, fdic2, labels = c( "mon", "tue", "wed", "thu", "fri", "sat", "sun" ), col = "blue" )
+
+fdic1 = tapply( Psi[,eje_horizontal],data$homeowner,mean)
+fdic2 = tapply( Psi[,eje_vertical],data$homeowner,mean)
+lines( fdic1, fdic2, pch = 16, col = "green", labels = levels( data$homeowner))
+text( fdic1, fdic2, labels = c( "not_homeowner", "homeowner" ), col = "green" )
+
+fdic1 = tapply( Psi[,eje_horizontal],data$risk_factor,mean)
+fdic2 = tapply( Psi[,eje_vertical],data$risk_factor,mean)
+lines( fdic1, fdic2, pch = 16, col = "orange", labels = levels( data$risk_factor))
+text( fdic1, fdic2, labels = c( "1", "2", "3", "4", "NA" ), col = "orange" )
+
+fdic1 = tapply( Psi[,eje_horizontal],data$state,mean)
+fdic2 = tapply( Psi[,eje_vertical],data$state,mean)
+points( fdic1, fdic2, pch = 16, col = "purple", labels = levels( data$state))
+text( fdic1, fdic2, labels = levels(data$state), col = "purple" )
+
+fdic1 = tapply( Psi[,eje_horizontal],data$group_size,mean)
+fdic2 = tapply( Psi[,eje_vertical],data$group_size,mean)
+lines( fdic1, fdic2, pch = 16, col = "brown", labels = levels( data$group_size))
+text( fdic1, fdic2, labels = levels(data$group_size), col = "brown" )
+
+# FIN: Proyectar centroides de variables cualitativas sobre ejes 1 y 2 (las variables más importantes: 1: cost y duration_previous, 2: age_oldest y age_youngest)
+
+plot(Psi[,3],Psi[,4],col="gray", xlim=range(-6:6), ylim=range(-4:4), pch=20)
+arrows(ze, ze, fm*U[,3], fm*U[,4], length = 0.07,col="red")
+text(fm*U[,3],fm*U[,4],labels=etiq,col="red")
+
+plot(Psi[,4],Psi[,5],col="gray", xlim=range(-6:6), ylim=range(-4:4), pch=20)
+arrows(ze, ze, fm*U[,4], fm*U[,5], length = 0.07,col="red")
+text(fm*U[,4],fm*U[,5],labels=etiq,col="red")
 
 # 
 # INTERPRET THE TWO FIRST AXES?
@@ -262,6 +305,10 @@ k1$size
 k1$withinss
 
 k1$centers
+
+###################################################################################################################################################
+######################################################## Lab 5 #######################################################
+###################################################################################################################################################
 
 # LETS COMPUTE THE DECOMPOSITION OF INERTIA
 
