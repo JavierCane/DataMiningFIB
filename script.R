@@ -160,39 +160,42 @@ fm = round(max(abs(Psi[,1])))
 eje_horizontal = 1
 eje_vertical   = 2
 
+rango_horizontal = 6
+rango_vertical = 5
+
 # plot(Psi[,eje_horizontal],Psi[,eje_vertical],col="white", xlim=range(-6:6), ylim=range(-4:4), pch=20)
-plot( Psi[,eje_horizontal],Psi[ ,eje_vertical ],col = "white", xlim = range( -1:1), ylim = range( -0.5:0.5), pch = 20)
+plot( Psi[,eje_horizontal],Psi[ ,eje_vertical ],col = "white", xlim = range( -rango_horizontal: rango_horizontal), ylim = range( -rango_vertical: rango_vertical), pch = 20)
 arrows( ze, ze, fm * U[, eje_horizontal], fm * U[ , eje_vertical ], length = 0.07,col = "red")
 text( fm * U[, eje_horizontal],fm * U[ , eje_vertical ],labels = etiq,col = "red")
 
 fdic1 = tapply( Psi[,eje_horizontal],data$married_couple,mean)
 fdic2 = tapply( Psi[,eje_vertical],data$married_couple,mean)
-lines( fdic1, fdic2, pch = 16, col = "yellow", labels = levels( data$married_couple))
+lines( fdic1, fdic2, pch = 16, col = "yellow", labels = levels( data$married_couple), xlim = range( -rango_horizontal: rango_horizontal), ylim = range( -rango_vertical: rango_vertical))
 text( fdic1, fdic2, labels = c( "single", "married" ), col = "yellow" )
 
 fdic1 = tapply( Psi[,eje_horizontal],data$day,mean)
 fdic2 = tapply( Psi[,eje_vertical],data$day,mean)
-lines( fdic1, fdic2, pch = 16, col = "blue", labels = levels( data$day))
+lines( fdic1, fdic2, pch = 16, col = "blue", labels = levels( data$day), xlim = range( -rango_horizontal: rango_horizontal), ylim = range( -rango_vertical: rango_vertical))
 text( fdic1, fdic2, labels = c( "mon", "tue", "wed", "thu", "fri", "sat", "sun" ), col = "blue" )
 
 fdic1 = tapply( Psi[,eje_horizontal],data$homeowner,mean)
 fdic2 = tapply( Psi[,eje_vertical],data$homeowner,mean)
-lines( fdic1, fdic2, pch = 16, col = "green", labels = levels( data$homeowner))
+lines( fdic1, fdic2, pch = 16, col = "green", labels = levels( data$homeowner), xlim = range( -rango_horizontal: rango_horizontal), ylim = range( -rango_vertical: rango_vertical))
 text( fdic1, fdic2, labels = c( "not_homeowner", "homeowner" ), col = "green" )
 
 fdic1 = tapply( Psi[,eje_horizontal],data$risk_factor,mean)
 fdic2 = tapply( Psi[,eje_vertical],data$risk_factor,mean)
-lines( fdic1, fdic2, pch = 16, col = "orange", labels = levels( data$risk_factor))
+lines( fdic1, fdic2, pch = 16, col = "orange", labels = levels( data$risk_factor), xlim = range( -rango_horizontal: rango_horizontal), ylim = range( -rango_vertical: rango_vertical))
 text( fdic1, fdic2, labels = c( "1", "2", "3", "4", "NA" ), col = "orange" )
 
 fdic1 = tapply( Psi[,eje_horizontal],data$state,mean)
 fdic2 = tapply( Psi[,eje_vertical],data$state,mean)
-points( fdic1, fdic2, pch = 16, col = "purple", labels = levels( data$state))
+points( fdic1, fdic2, pch = 16, col = "purple", labels = levels( data$state), xlim = range( -rango_horizontal: rango_horizontal), ylim = range( -rango_vertical: rango_vertical))
 text( fdic1, fdic2, labels = levels(data$state), col = "purple" )
 
 fdic1 = tapply( Psi[,eje_horizontal],data$group_size,mean)
 fdic2 = tapply( Psi[,eje_vertical],data$group_size,mean)
-lines( fdic1, fdic2, pch = 16, col = "brown", labels = levels( data$group_size))
+lines( fdic1, fdic2, pch = 16, col = "brown", labels = levels( data$group_size), xlim = range( -rango_horizontal: rango_horizontal), ylim = range( -rango_vertical: rango_vertical))
 text( fdic1, fdic2, labels = levels(data$group_size), col = "brown" )
 
 # FIN: Proyectar centroides de variables cualitativas sobre ejes 1 y 2 (las variables más importantes: 1: cost y duration_previous, 2: age_oldest y age_youngest)
