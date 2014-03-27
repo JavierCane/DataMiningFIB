@@ -13,7 +13,7 @@ data <- read.table("/Users/javierferrer/Documents/Uni/MD/data/state_varios-oldes
 data$record_type <- as.factor(data$record_type) # Factor -> Qualitative
 data$group_size <- as.factor(data$group_size)
 data$day <- as.factor(data$day)
-data$time <- as.numeric(data$time) #Numeric -> Quantitative
+data$shopping_pt <- as.factor(data$shopping_pt)
 data$location <- as.factor(data$location)
 data$homeowner <- as.factor(data$homeowner)
 data$risk_factor <- as.factor(data$risk_factor)
@@ -110,7 +110,7 @@ summary(data)
 ####################################################### Lab 3: Principal Component Analysis #######################################################
 ###################################################################################################################################################
 
-dcon <- data.frame ("Shopping_pt" = data$shopping_pt, "Time" = data$time, "Car_age" = data$car_age, "Age_oldest" = data$age_oldest, "Age_youngest" = data$age_youngest, "Duration_previous" = data$duration_previous, "Cost" = data$cost)
+dcon <- data.frame ("Car_age" = data$car_age, "Age_oldest" = data$age_oldest, "Age_youngest" = data$age_youngest, "Duration_previous" = data$duration_previous, "Cost" = data$cost)
 pc1 = prcomp(dcon, scale=T)
 
 # WHICH PERCENTAGE OF THE TOTAL INERTIA IS REPRESENTED IN SUBSPACES?
@@ -119,12 +119,12 @@ inerProj<- pc1$sdev^2
 totalIner<- sum(inerProj)
 pinerEix<- 100*inerProj/totalIner
 
-#Cummulated Inertia in subspaces, from first principal component to the 11th dimension subspace
+# Cummulated Inertia in subspaces, from first principal component to the 4th dimension subspace
 barplot(100*cumsum(pc1$sdev[1:dim(dcon)[2]]^2)/dim(dcon)[2])
 
 # SELECTION OF THE SIGIFICATIVE DIMENSIONS
 
-nd = 5
+nd = 4
 
 # STORAGE OF THE EIGENVALUES, EIGENVECTORS AND PROJECTIONS IN THE nd DIMENSIONS
 
@@ -146,27 +146,42 @@ axis(side=3, pos= 0, labels = F, col="cyan")
 axis(side=2, pos= 0, labels = F, col="cyan")
 axis(side=4, pos= 0, labels = F, col="cyan")
 
+# 150 - ejes originales sobre phis
+eje_horizontal = 1
+eje_vertical   = 2
+
 Phi = cor(dcon,Psi)
-plot(Phi[,1],Phi[,2],type="none",xlim=c(min(Phi[,1]-0.2,0),max(Phi[,1]+0.2,0)))
+plot(Phi[,eje_horizontal],Phi[,eje_vertical],type="none",xlim=c(min(Phi[,eje_horizontal]-0.2,0),max(Phi[,eje_horizontal]+0.2,0)))
 axis(side=1, pos= 0, labels = F)
 axis(side=3, pos= 0, labels = F)
 axis(side=2, pos= 0, labels = F)
 axis(side=4, pos= 0, labels = F)
-arrows(ze, ze, Phi[,1], Phi[,2], length = 0.07,col="blue")
-text(Phi[,1],Phi[,2],labels=etiq,col="darkblue")
-fm = round(max(abs(Psi[,1])))
+arrows(ze, ze, Phi[,eje_horizontal], Phi[,eje_vertical], length = 0.07,col="blue")
+text(Phi[,eje_horizontal],Phi[,eje_vertical],labels=etiq,col="darkblue")
+fm = round(max(abs(Psi[,eje_horizontal])))
 
 # Proyectar centroides de variables cualitativas sobre ejes 1 y 2 (las variables más importantes: 1: cost y duration_previous, 2: age_oldest y age_youngest)
 eje_horizontal = 1
 eje_vertical   = 2
 
-rango_horizontal = 0.6
-rango_vertical = 1
+rango_horizontal = 2
+rango_vertical = 2
 
 # plot(Psi[,eje_horizontal],Psi[,eje_vertical],col="white", xlim=range(-6:6), ylim=range(-4:4), pch=20)
 plot( Psi[,eje_horizontal],Psi[ ,eje_vertical ],col = "white", xlim = range( -rango_horizontal: rango_horizontal), ylim = range( -rango_vertical: rango_vertical), pch = 20)
 arrows( ze, ze, fm * U[, eje_horizontal], fm * U[ , eje_vertical ], length = 0.07,col = "red")
 text( fm * U[, eje_horizontal],fm * U[ , eje_vertical ],labels = etiq,col = "red")
+
+# plot unitario (plot de las variables normalizado)
+Phi = cor(dcon,Psi)
+plot(Phi[,eje_horizontal],Phi[,eje_vertical],type="none",xlim=c(min(Phi[,eje_horizontal]-0.2,0),max(Phi[,eje_horizontal]+0.2,0)))
+axis(side=1, pos= 0, labels = F)
+axis(side=3, pos= 0, labels = F)
+axis(side=2, pos= 0, labels = F)
+axis(side=4, pos= 0, labels = F)
+arrows(ze, ze, Phi[,eje_horizontal], Phi[,eje_vertical], length = 0.07,col="blue")
+text(Phi[,eje_horizontal],Phi[,eje_vertical],labels=etiq,col="darkblue")
+fm = round(max(abs(Psi[,eje_horizontal])))
 
 fdic1 = tapply( Psi[,eje_horizontal],data$married_couple,mean)
 fdic2 = tapply( Psi[,eje_vertical],data$married_couple,mean)
@@ -175,8 +190,8 @@ text( fdic1, fdic2, labels = c( "single", "married" ), col = "yellow" )
 
 fdic1 = tapply( Psi[,eje_horizontal],data$day,mean)
 fdic2 = tapply( Psi[,eje_vertical],data$day,mean)
-lines( fdic1, fdic2, pch = 16, col = "blue", labels = levels( data$day), xlim = range( -rango_horizontal: rango_horizontal), ylim = range( -rango_vertical: rango_vertical))
-text( fdic1, fdic2, labels = c( "mon", "tue", "wed", "thu", "fri", "sat", "sun" ), col = "blue" )
+lines( fdic1, fdic2, pch = 16, col = "gray", labels = levels( data$day), xlim = range( -rango_horizontal: rango_horizontal), ylim = range( -rango_vertical: rango_vertical))
+text( fdic1, fdic2, labels = c( "mon", "tue", "wed", "thu", "fri", "sat", "sun" ), col = "gray" )
 
 fdic1 = tapply( Psi[,eje_horizontal],data$homeowner,mean)
 fdic2 = tapply( Psi[,eje_vertical],data$homeowner,mean)
@@ -197,6 +212,8 @@ fdic1 = tapply( Psi[,eje_horizontal],data$group_size,mean)
 fdic2 = tapply( Psi[,eje_vertical],data$group_size,mean)
 lines( fdic1, fdic2, pch = 16, col = "brown", labels = levels( data$group_size), xlim = range( -rango_horizontal: rango_horizontal), ylim = range( -rango_vertical: rango_vertical))
 text( fdic1, fdic2, labels = levels(data$group_size), col = "brown" )
+
+legend("topleft",c("civil_state","week_day","homeowner","risk_factor","USA_state", "group_size"),pch=1,col=c("yellow","gray","green", "orange", "purple", "brown"))
 
 # FIN: Proyectar centroides de variables cualitativas sobre ejes 1 y 2 (las variables más importantes: 1: cost y duration_previous, 2: age_oldest y age_youngest)
 
