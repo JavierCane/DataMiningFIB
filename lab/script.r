@@ -4,500 +4,553 @@
 #Modificar el nombre del archivo a conveniencia
 data <- read.table("/Users/javierferrer/Documents/Uni/MD/data/state_varios-oldest_ge_45-youngest_le_27-5910_reg.csv",sep=";",header=TRUE)
 
+# Function to save plots easily.
+save_plot <- function(file="plot.png", type=png, width=800, height=600, units="px", res=72) {
+  err <- dev.copy(type,file,width=height,height=height,units=units,res=res)
+  err <- dev.off()
+}
+
 
 ###################################################################################################################################################
 ################################################################ Lab 1: Data load #################################################################
 ###################################################################################################################################################
 
-#Treating variables as qualitative/quantitative
-data$record_type <- as.factor(data$record_type) # Factor -> Qualitative
-data$group_size <- as.factor(data$group_size)
-data$day <- as.factor(data$day)
-data$shopping_pt <- as.factor(data$shopping_pt)
-data$location <- as.factor(data$location)
-data$homeowner <- as.factor(data$homeowner)
-data$risk_factor <- as.factor(data$risk_factor)
+# Treating variables as qualitative
+data$customer_ID    <- as.factor(data$customer_ID)
+data$shopping_pt    <- as.factor(data$shopping_pt)
+data$record_type    <- as.factor(data$record_type)
+data$day            <- as.factor(data$day)
+data$location       <- as.factor(data$location)
+data$group_size     <- as.factor(data$group_size)
+data$homeowner      <- as.factor(data$homeowner)
+data$risk_factor    <- as.factor(data$risk_factor)
 data$married_couple <- as.factor(data$married_couple)
-data$C_previous <- as.factor(data$C_previous)
-data$A <- as.factor(data$A)
-data$B <- as.factor(data$B)
-data$C <- as.factor(data$C)
-data$D <- as.factor(data$D)
-data$E <- as.factor(data$E)
-data$F <- as.factor(data$F)
-data$G <- as.factor(data$G)
+data$C_previous     <- as.factor(data$C_previous)
+data$A              <- as.factor(data$A)
+data$B              <- as.factor(data$B)
+data$C              <- as.factor(data$C)
+data$D              <- as.factor(data$D)
+data$E              <- as.factor(data$E)
+data$F              <- as.factor(data$F)
+data$G              <- as.factor(data$G)
 
-summary(data)
+# Correcting data$time. The new format is "minutes since 00:00".
+aux_time <- NULL
+for (i in 1:nrow(data)) {
+  hhmm <- unlist(strsplit(as.character(data$time[i]), ":"))
+  aux_time[i] <- as.numeric(hhmm[1])*60 + as.numeric(hhmm[2])
+}
+data$time <- aux_time
+rm(aux_time, hhmm, i)
 
 
 ###################################################################################################################################################
 ############################################################ Lab 2: Preprocessing ############################################################
 ###################################################################################################################################################
 
-hist(data$customer_ID)
-hist(data$shopping_pt) #1
-plot(data$record_type)
-plot(data$day) #
-hist(data$time) #2
-plot(data$state)
-hist(data$location) #3
-plot(data$group_size) #factor
-plot(data$homeowner)
-hist(data$car_age) #4
-plot(data$car_value)
-plot(data$risk_factor) #factor
-hist(data$age_oldest) #5
-hist(data$age_youngest) #6
-plot(data$married_couple)
-plot(data$C_previous) #factor
-hist(data$duration_previous) #7
-plot(data$A) #factor
-plot(data$B) #factor
-plot(data$C) #factor
-plot(data$D) #factor
-plot(data$E) #factor
-plot(data$F) #factor
-plot(data$G) #factor
-hist(data$cost) #8
+# NA's become a new class in C_previous (5th) and in risk_factor (5th)
+levels(data$C_previous) <- c(1,2,3,4,5)
+data$C_previous[is.na(data$C_previous)] <- 5
 
-dura_previ <-data$duration_previous
+levels(data$risk_factor) <- c(1,2,3,4,5)
+data$risk_factor[is.na(data$risk_factor)] <- 5
 
-C_previ <- data$C_previous
-levels(C_previ) <- c(1,2,3,4,5)
-for (i in 1:length(C_previ)){
-	if(is.na(C_previ[i])) C_previ[i] <- 5
-}
-summary(C_previ)
+# Fixing duration_previous:
+# With the mean
+data$duration_previous[is.na(data$duration_previous)] = mean(data$duration_previous[!is.na(data$duration_previous)]) 
 
-factor_risc <- data$risk_factor
-levels(factor_risc) <- c(1,2,3,4,5)
-for (i in 1:length(factor_risc)){
-	if(is.na(factor_risc[i])) factor_risc[i] <- 5
-}
-summary(factor_risc)
+# With the median
+#data$duration_previous[is.na(data$duration_previous)] = median(data$duration_previous[!is.na(data$duration_previous)])
 
-data$C_previous <- C_previ
-data$risk_factor <- factor_risc
+# With the K-Nearest Neighbour (NOT WORKING)
+#library(class)
+#data_without_dp = data[, !names(data) %in% c("duration_previous")]
+#train = data_without_dp[!is.na(data$duration_previous),]
+#test  = data_without_dp[is.na(data$duration_previous),]
+#true_classifications_dp = data$duration_previous[!is.na(data$duration_previous)];
+#data$duration_previous[is.na(data$duration_previous)] = knn(train, test, true_classifications_dp)
+#rm(data_without_dp, train, test, true_classifications_dp)
 
-summary(data)
-
-library(class)
-
-table(is.na(data$duration_previous))
-
-mean_dura_previ = mean(dura_previ[!is.na(dura_previ)])
-
-for (i in 1:length(dura_previ)){
-	if(is.na(dura_previ[i])) dura_previ[i] <- mean_dura_previ
-}
-summary(dura_previ)
-data$duration_previous <- dura_previ
-#Fixing duration_previous:
-#aaux = data[,-17]
-#dim(aaux)
-#aaux1 = aaux[!is.na(dura_previ),]
-#dim(aaux1)
-#aaux2 = aaux[is.na(dura_previ),]
-#dim(aaux2)
-#length(aaux2[,1])
-#length(dura_previ[!is.na(dura_previ)])
-#knn2.ing = knn(aaux1,aaux2,dura_previ[!is.na(dura_previ)])   # NEITHER AUX1, AUX2 CAN CONTAIN NAs)
-#dura_previ[is.na(dura_previ)] = knn.ing
-
-summary(data)
 
 ###################################################################################################################################################
 ####################################################### Lab 3: Principal Component Analysis #######################################################
 ###################################################################################################################################################
 
-dcon <- data.frame ("Car_age" = data$car_age, "Age_oldest" = data$age_oldest, "Age_youngest" = data$age_youngest, "Duration_previous" = data$duration_previous, "Cost" = data$cost)
-pc1 = prcomp(dcon, scale=T)
+cardinals <- c("1st","2nd","3rd","4th","5th","6th","7th","8th","9th","10th","11th","12th","13th","14th","15th","16th","17th","18th","19th","20th")
 
-# WHICH PERCENTAGE OF THE TOTAL INERTIA IS REPRESENTED IN SUBSPACES?
+# Spliting of qualitative and quantitative data:
+is_factor <- sapply(data, is.factor)
+data_qualitative  <- data[,is_factor]
+data_quantitative <- data[,!is_factor]
 
-inerProj<- pc1$sdev^2 
-totalIner<- sum(inerProj)
-pinerEix<- 100*inerProj/totalIner
+# Performing the Principal Components Analysis over the quantitative data columns:
+principal_components = prcomp(data_quantitative, scale=TRUE)
 
-# Cummulated Inertia in subspaces, from first principal component to the 4th dimension subspace
-barplot(100*cumsum(pc1$sdev[1:dim(dcon)[2]]^2)/dim(dcon)[2])
+# What percentatge of the total inertia is represented in each subspace?
+inertia_projection  <- principal_components$sdev^2 
+total_inertia <- sum(inertia_projection)
+percent_inertia_axis <- 100*inertia_projection/total_inertia
 
-# SELECTION OF THE SIGIFICATIVE DIMENSIONS
+# Cummulated inertia in each subspaces, from the first principal component to the Nth dimension subspace
+cummulated_inertia = cumsum(principal_components$sdev^2) / ncol(data_quantitative)
+barplot( 100*cummulated_inertia,
+         main = "Cummulated inertia in each principal component",
+         xlab = "principal components",
+         ylab = "Cummulated inertia (%)",
+         names.arg = cardinals[1:ncol(data_quantitative)])
+save_plot("101_cummulated_inertia.png")
 
-nd = 4
+# Selection of the significative dimensions
+#num_signif_dim <- 4 #4 o 5?! (4 is just below 80%)
+num_signif_dim <- min( which(cummulated_inertia>=0.8) )
 
-# STORAGE OF THE EIGENVALUES, EIGENVECTORS AND PROJECTIONS IN THE nd DIMENSIONS
-
-lbd = pc1$sdev[1:nd]^2
-U = pc1$rotation[,1:nd]
-Psi = pc1$x[,1:nd]
-
-# STORAGE OF LABELS FOR INDIVIDUALS AND VARIABLES
-
-etiq = names(dcon)
-ze = rep(0,length(etiq)) # WE WILL NEED THIS VECTOR AFTERWARDS FOR THE GRAPHICS
-
-
-# PLOT OF INDIVIDUALS
-
-plot(Psi[,1],Psi[,2])
-axis(side=1, pos= 0, labels = F, col="cyan")
-axis(side=3, pos= 0, labels = F, col="cyan")
-axis(side=2, pos= 0, labels = F, col="cyan")
-axis(side=4, pos= 0, labels = F, col="cyan")
-
-# 150 - ejes originales sobre phis
-eje_horizontal = 1
-eje_vertical   = 2
-
-Phi = cor(dcon,Psi)
-plot(Phi[,eje_horizontal],Phi[,eje_vertical],type="none",xlim=c(min(Phi[,eje_horizontal]-0.2,0),max(Phi[,eje_horizontal]+0.2,0)))
-axis(side=1, pos= 0, labels = F)
-axis(side=3, pos= 0, labels = F)
-axis(side=2, pos= 0, labels = F)
-axis(side=4, pos= 0, labels = F)
-arrows(ze, ze, Phi[,eje_horizontal], Phi[,eje_vertical], length = 0.07,col="blue")
-text(Phi[,eje_horizontal],Phi[,eje_vertical],labels=etiq,col="darkblue")
-fm = round(max(abs(Psi[,eje_horizontal])))
-
-# Proyectar centroides de variables cualitativas sobre ejes 1 y 2 (las variables más importantes: 1: cost y duration_previous, 2: age_oldest y age_youngest)
-eje_horizontal = 1
-eje_vertical   = 2
-
-rango_horizontal = 2
-rango_vertical = 2
-
-# plot(Psi[,eje_horizontal],Psi[,eje_vertical],col="white", xlim=range(-6:6), ylim=range(-4:4), pch=20)
-plot( Psi[,eje_horizontal],Psi[ ,eje_vertical ],col = "white", xlim = range( -rango_horizontal: rango_horizontal), ylim = range( -rango_vertical: rango_vertical), pch = 20)
-arrows( ze, ze, fm * U[, eje_horizontal], fm * U[ , eje_vertical ], length = 0.07,col = "red")
-text( fm * U[, eje_horizontal],fm * U[ , eje_vertical ],labels = etiq,col = "red")
-
-# plot unitario (plot de las variables normalizado)
-Phi = cor(dcon,Psi)
-plot(Phi[,eje_horizontal],Phi[,eje_vertical],type="none",xlim=c(min(Phi[,eje_horizontal]-0.2,0),max(Phi[,eje_horizontal]+0.2,0)))
-axis(side=1, pos= 0, labels = F)
-axis(side=3, pos= 0, labels = F)
-axis(side=2, pos= 0, labels = F)
-axis(side=4, pos= 0, labels = F)
-arrows(ze, ze, Phi[,eje_horizontal], Phi[,eje_vertical], length = 0.07,col="blue")
-text(Phi[,eje_horizontal],Phi[,eje_vertical],labels=etiq,col="darkblue")
-fm = round(max(abs(Psi[,eje_horizontal])))
-
-fdic1 = tapply( Psi[,eje_horizontal],data$married_couple,mean)
-fdic2 = tapply( Psi[,eje_vertical],data$married_couple,mean)
-lines( fdic1, fdic2, pch = 16, col = "yellow", labels = levels( data$married_couple), xlim = range( -rango_horizontal: rango_horizontal), ylim = range( -rango_vertical: rango_vertical))
-text( fdic1, fdic2, labels = c( "single", "married" ), col = "yellow" )
-
-fdic1 = tapply( Psi[,eje_horizontal],data$day,mean)
-fdic2 = tapply( Psi[,eje_vertical],data$day,mean)
-lines( fdic1, fdic2, pch = 16, col = "gray", labels = levels( data$day), xlim = range( -rango_horizontal: rango_horizontal), ylim = range( -rango_vertical: rango_vertical))
-text( fdic1, fdic2, labels = c( "mon", "tue", "wed", "thu", "fri", "sat", "sun" ), col = "gray" )
-
-fdic1 = tapply( Psi[,eje_horizontal],data$homeowner,mean)
-fdic2 = tapply( Psi[,eje_vertical],data$homeowner,mean)
-lines( fdic1, fdic2, pch = 16, col = "green", labels = levels( data$homeowner), xlim = range( -rango_horizontal: rango_horizontal), ylim = range( -rango_vertical: rango_vertical))
-text( fdic1, fdic2, labels = c( "not_homeowner", "homeowner" ), col = "green" )
-
-fdic1 = tapply( Psi[,eje_horizontal],data$risk_factor,mean)
-fdic2 = tapply( Psi[,eje_vertical],data$risk_factor,mean)
-lines( fdic1, fdic2, pch = 16, col = "orange", labels = levels( data$risk_factor), xlim = range( -rango_horizontal: rango_horizontal), ylim = range( -rango_vertical: rango_vertical))
-text( fdic1, fdic2, labels = c( "1", "2", "3", "4", "NA" ), col = "orange" )
-
-fdic1 = tapply( Psi[,eje_horizontal],data$state,mean)
-fdic2 = tapply( Psi[,eje_vertical],data$state,mean)
-points( fdic1, fdic2, pch = 16, col = "purple", labels = levels( data$state), xlim = range( -rango_horizontal: rango_horizontal), ylim = range( -rango_vertical: rango_vertical))
-text( fdic1, fdic2, labels = levels(data$state), col = "purple" )
-
-fdic1 = tapply( Psi[,eje_horizontal],data$group_size,mean)
-fdic2 = tapply( Psi[,eje_vertical],data$group_size,mean)
-lines( fdic1, fdic2, pch = 16, col = "brown", labels = levels( data$group_size), xlim = range( -rango_horizontal: rango_horizontal), ylim = range( -rango_vertical: rango_vertical))
-text( fdic1, fdic2, labels = levels(data$group_size), col = "brown" )
-
-legend("topleft",c("civil_state","week_day","homeowner","risk_factor","USA_state", "group_size"),pch=1,col=c("yellow","gray","green", "orange", "purple", "brown"))
-
-# FIN: Proyectar centroides de variables cualitativas sobre ejes 1 y 2 (las variables más importantes: 1: cost y duration_previous, 2: age_oldest y age_youngest)
-
-plot(Psi[,3],Psi[,4],col="gray", xlim=range(-6:6), ylim=range(-4:4), pch=20)
-arrows(ze, ze, fm*U[,3], fm*U[,4], length = 0.07,col="red")
-text(fm*U[,3],fm*U[,4],labels=etiq,col="red")
-
-plot(Psi[,4],Psi[,5],col="gray", xlim=range(-6:6), ylim=range(-4:4), pch=20)
-arrows(ze, ze, fm*U[,4], fm*U[,5], length = 0.07,col="red")
-text(fm*U[,4],fm*U[,5],labels=etiq,col="red")
-
-# 
-# INTERPRET THE TWO FIRST AXES?
-#
-cor(dcon,Psi)
-
-# CALCULATE THE PROJECTIONS OF THE VARIABLES PHI
-
-U %*% diag(sqrt(lbd))
-
-# WRITE THE FIRST PRINCIPAL COMPONENT FUNCTION OF THE OBSERVED VARIABLES
-# THE FIRST COMPONENT IS
+# Storage of the eigenvalues, eigenvectors and projections in the num_signif_dim dimensions
+inertia_projection_signif <- principal_components$sdev[1:num_signif_dim]^2
+rotation_PC_signif        <- principal_components$rotation[,1:num_signif_dim]
+points_projected_PCs      <- principal_components$x[,1:num_signif_dim]
 
 
-Z    = scale(dcon)
-reg1 = lm(Psi[,1]~ Z)
-print(reg1)
-U[,1]
+# Plots
+Psi <- points_projected_PCs
+Phi <- cor(data_quantitative, points_projected_PCs)
 
-# LIKEWISE EVERY VARIABLE CAN BE EXPLAINED BY THE PRINCIPAL COMPONENTS (LATENT FACTORS) 
+# 1st plot (points, axes, arrows):
+for (axis_h in 1:(num_signif_dim-1)) {
+  for (axis_v in (axis_h+1):num_signif_dim)  {
+    range_h <- c(min(Psi[,axis_h]-0.2,0), max(Psi[,axis_h]+0.2,0)) # copied from Jaume. I guess we don't really need the ",0"... And we should be consistents and do the +-0.2 in the next plots!
+    range_v <- c(min(Psi[,axis_v]-0.2,0), max(Psi[,axis_v]+0.2,0))
+    
+    plot( Psi[,axis_h],
+          Psi[,axis_v],
+          xlim = range_h,
+          ylim = range_v,
+          pch = 20,
+          col="grey",
+          main = paste("Original axis ploted on the ",cardinals[axis_h]," and ",cardinals[axis_v]," principal components", sep=""),
+          xlab = paste(cardinals[axis_h]," principal component", sep=""),
+          ylab = paste(cardinals[axis_v]," principal component", sep="") )
+    
+    axis(side=1, pos= 0, labels = F, col="black")
+    axis(side=3, pos= 0, labels = F, col="black")
+    axis(side=2, pos= 0, labels = F, col="black")
+    axis(side=4, pos= 0, labels = F, col="black")
+    
+    scale_arrows <- min( range_v[1]/min(Phi[,axis_v]),
+                         range_h[1]/min(Phi[,axis_h]),
+                         range_v[2]/max(Phi[,axis_v]),
+                         range_h[2]/max(Phi[,axis_h]))
+    
+    aux_zeros = rep(0, num_signif_dim)
+    
+    arrows( aux_zeros,
+            aux_zeros,
+            scale_arrows*Phi[,axis_h],
+            scale_arrows*Phi[,axis_v],
+            length=0.1,
+            col="blue")
+    
+    text( scale_arrows*Phi[,axis_h],
+          scale_arrows*Phi[,axis_v],
+          labels=names(data_quantitative),
+          col="blue")
+    
+    save_plot(paste("157_original_axis_on_pc",axis_h,"_and_pc",axis_v,".png", sep=""))
+  }
+}
+rm(axis_h, axis_v, range_h, range_v, scale_arrows, aux_zeros)
 
-reg2 = lm(Z[,1]~ pc1$x[,1:nd])
-print(reg2)
-U[1,]
 
-# HOWEVER TO IDENTIFY THE LATENT FACTORS IS BETTER TO PERFORM A ROTATION OF THE DIRECTIONS TO FACILITATE THIR INTERPRETABILITY
-# RUN VARIMAX ROTATION AND LOOK FOR LOADING (=CORRELATION) > 0.7
+# 2nd plot (axis, arrows, centroids)
+ploted_classes <- c(3:5,7:8,11) # these should be choosen carefully!!!
+colors <- rainbow(ncol(data_qualitative)) # these colors should be tunned ;)
+#Another option (i think it's more visible)
+#colors <- c("orange", "brown","green", "darkgrey", "purple", "red", "orange", "darkgreen","green", "orange", "brown", "darkblue", "purple", "red", "darkgrey", "darkgreen")
+for (axis_h in 1:(num_signif_dim-1)) {
+  for (axis_v in (axis_h+1):num_signif_dim)  {
+    range_h <- c(-1,1)
+    range_v <- c(-1,1)
+    
+    plot( Phi[,axis_h],
+          Phi[,axis_v],
+          xlim = range_h,
+          ylim = range_v,
+          col="white",
+          main = paste("Centroids ploted on the ",cardinals[axis_h]," and ",cardinals[axis_v]," principal components", sep=""),
+          xlab = paste(cardinals[axis_h]," principal component", sep=""),
+          ylab = paste(cardinals[axis_v]," principal component", sep="") )
+    
+    axis(side=1, pos= 0, labels = F, col="black")
+    axis(side=3, pos= 0, labels = F, col="black")
+    axis(side=2, pos= 0, labels = F, col="black")
+    axis(side=4, pos= 0, labels = F, col="black")
+    
+    aux_zeros = rep(0, num_signif_dim)
+    
+    arrows( aux_zeros,
+            aux_zeros,
+            Phi[,axis_h],
+            Phi[,axis_v],
+            length=0.1,
+            col="blue")
+    
+    text( Phi[,axis_h],
+          Phi[,axis_v],
+          labels=names(data_quantitative),
+          col="blue")
+    
+    for (i in ploted_classes) { #maybe we could make 2 loops, one for "lines" and one for "points".
+      column <- data_qualitative[,i]
+      centroids_h <- tapply(Psi[,axis_h], column, mean)
+      centroids_v <- tapply(Psi[,axis_v], column, mean)
+      text  (centroids_h, centroids_v, col=colors[i], labels=levels(column))
+    }
+    
+    legend("topleft",names(data_qualitative[ploted_classes]),pch=20,col=colors[ploted_classes])
+    
+    save_plot(paste("210_centroids_on_pc",axis_h,"_and_pc",axis_v,".png", sep=""))
+  }
+}
+rm(ploted_classes, colors, axis_h, axis_v, range_h, range_v, aux_zeros, i, column, centroids_h, centroids_v)
 
-pcrot = varimax(Phi)
-print(pcrot)
 
-# PROJECTION OF CATEGORICAL VALUES AS ILLUSTRATIVE
-# (we need a numeric Dictamen to color)
+# 3rd plot (points, types):
+colors <- c("red","black","green","blue","yellow","purple","cyan","orange","brown","magenta","grey","dark red","dark blue","dark green",1:1000) # these colors should be tunned too! :)
 
-idict=data$risk_factor
-plot(Psi[,1],Psi[,2],col=idict)
-axis(side=1, pos= 0, labels = F, col="darkgray")
-axis(side=3, pos= 0, labels = F, col="darkgray")
-axis(side=2, pos= 0, labels = F, col="darkgray")
-axis(side=4, pos= 0, labels = F, col="darkgray")
-legend("topright",c("1","2","3","4","Not Available"),pch=1,col=c(1,2,3,4,5,6))
+for (i in 11:11) { #for (i in 1:ncol(data_qualitative)) { #be careful, it generates 200+ images and takes a while
+  for (axis_h in 1:(num_signif_dim-1)) {
+    for (axis_v in (axis_h+1):num_signif_dim)  {
+      column <- data_qualitative[i]
+      name_column <- names(column)
+      
+      range_h <- c(min(Psi[,axis_h]-0.2, 0), max(Psi[,axis_h]+0.2, 0))
+      range_v <- c(min(Psi[,axis_v]-0.2, 0), max(Psi[,axis_v]+0.2, 0))
+      
+      plot( Psi[,axis_h],
+            Psi[,axis_v],
+            xlim = range_h,
+            ylim = range_v,
+            pch = 20,
+            col = colors[1:nlevels(column[,1])],
+            main = paste("Types of ",name_column," ploted on the ",cardinals[axis_h]," and ",cardinals[axis_v]," principal components", sep=""),
+            xlab = paste(cardinals[axis_h]," principal component", sep=""),
+            ylab = paste(cardinals[axis_v]," principal component", sep="") )
+      
+      
+      legend("topright",legend=levels(column[,1]),pch=20,col=colors[1:nlevels(column[,1])])
+      
+      save_plot(paste("241_types_",name_column,"_on_pc",axis_h,"_and_pc",axis_v,".png", sep=""))
+    }
+  }
+}
+rm(colors, i, axis_h, axis_v, column, name_column, range_h, range_v, cardinals)
 
-#Tipus de contracte
-tcon=data$married
-plot(Psi[,1],Psi[,2],col=tcon)
-axis(side=1, pos= 0, labels = F, col="darkgray")
-axis(side=3, pos= 0, labels = F, col="darkgray")
-axis(side=2, pos= 0, labels = F, col="darkgray")
-axis(side=4, pos= 0, labels = F, col="darkgray")
-legend("topright",c("Not married","Married"),pch=1,col=c(1,2,3,4,5,6))
-
-tcon=data$homeowner
-plot(Psi[,1],Psi[,2],col=tcon)
-axis(side=1, pos= 0, labels = F, col="darkgray")
-axis(side=3, pos= 0, labels = F, col="darkgray")
-axis(side=2, pos= 0, labels = F, col="darkgray")
-axis(side=4, pos= 0, labels = F, col="darkgray")
-legend("topright",c("Does not owns a house","Owns a house"),pch=1,col=c(1,2,3,4,5,6))
-
-tcon=data$day
-plot(Psi[,1],Psi[,2],col=tcon)
-axis(side=1, pos= 0, labels = F, col="darkgray")
-axis(side=3, pos= 0, labels = F, col="darkgray")
-axis(side=2, pos= 0, labels = F, col="darkgray")
-axis(side=4, pos= 0, labels = F, col="darkgray")
-legend("topright",c("Dll","Dm", "Dc", "Dj", "Dv","Ds"),pch=1,col=c(1,2,3,4,5,6))
+# Aqui falten coses ...
 
 ###################################################################################################################################################
 ######################################################## Lab 4: Feature selection & K-means #######################################################
 ###################################################################################################################################################
 
+# Spliting of qualitative and quantitative data:
+is_factor <- sapply(data, is.factor)
+data_qualitative  <- data[,is_factor]
+#data_qualitative <- data.frame(data$record_type, data$group_size, data$day, data$homeowner, data$risk_factor, data$married_couple, data$C_previous, data$B, data$C, data$D, data$E, data$F, data$G)
+data_quantitative <- data[,!is_factor]
+
+# Renaming, for convenience
+Psi <- points_projected_PCs
+
+# Determining the Target Variable (Dictamen)
+target_variable = data$risk_factor # This is a problem since we have a 5th class corresponding to NA's!
+
+# Performing the ACM analisis (what does "ACM" stands for?)
+# Anyone knows what is she doing here?
+#ac1 <- acm(data_qualitative, target_variable) # Please, lets use better names than "ac1". And this takes a lot of time.
+
 dcat <- data.frame(data$record_type, data$group_size, data$day, data$homeowner, data$risk_factor, data$married_couple, data$C_previous, data$B, data$C, data$D, data$E, data$F, data$G)
-dict <- data.frame(data$A)
-
-source("/Users/javierferrer/Documents/Uni/MD/assets/clean_acm.r")
-
+dict <- data.frame(data$risk_factor)
 ac1 <- acm(dcat,dict)
 
-i <- 1
+nd <- max( which(ac1$vaps > 1/ncol(data_qualitative)) )
+FI <- ac1$rs[,1:nd]
+factors <- data.frame(Psi, FI)
 
-while (ac1$vaps[i] > 1/ncol(dcat)) i = i+1
+# K-means (Each time the results differ as it starts randomly!)
+cardinals <- c("1st","2nd","3rd","4th","5th","6th","7th","8th","9th","10th","11th","12th","13th","14th","15th","16th","17th","18th","19th","20th")
+colors <- 1:ncol(data_qualitative) # these colors should be tunned too ^_^
 
-nd = i-1
+for (k in 4:4) {
+  result_kmeans <- kmeans(factors, k)
+  Bss <- sum( rowSums(result_kmeans$centers^2) * result_kmeans$size )
+  Wss <- sum( result_kmeans$withinss )
+  #Tss <- sum( rowSums(Psi^2) )
+  Ib1 <- 100*Bss/(Bss+Wss)
+  
+  for (axis_h in 1:(num_signif_dim-1)) {
+    for (axis_v in (axis_h+1):num_signif_dim)  {
+      plot(
+            Psi[,axis_h],
+            Psi[,axis_v],
+            pch = 20,
+            col = colors[result_kmeans$cluster],
+            main = paste("Clustering of data in ",k," classes using K-means", sep=""),
+            xlab = paste(cardinals[axis_h]," principal component", sep=""),
+            ylab = paste(cardinals[axis_v]," principal component", sep="") )
+      
+      mtext( paste("Decomposition of intertia = ",Ib1, sep="") )
+      
+      legend("topleft", c(paste("cluster",1:k)), pch=20, col=colors[1:k] )
+      
+      save_plot(paste("299_kmeans_",k,"_on_pc",axis_h,"_and_pc",axis_v,".png", sep=""))
+    }
+  }
+}
 
-FI= ac1$rs[,1:nd]
+#Alternative (Jaume)
+#numclases <- c(3,4,5,6,8)
+#par(ask=TRUE)
+#for (i in 1:length(numclases)){
+	#Whereas k is the number of clases 
+#	k = numclases[i]
+#	k1 <- kmeans(factors,k)
+#	attributes(k1)
+#	k1$size
+#	k1$withinss
+#	k1$centers
+#	colors <- c("green", "orange", "brown", "darkblue", "purple", "red", "darkgrey", "darkgreen")
+#	clases <- rep(NA, length(data[,1]))
+#	for(j in 1:length(clases)){
+#		l <- k1$cluster[j]
+#		clases[j] <- colors[l]
+#	}
+#	title <- paste("Clustering of insurance policy data in ",as.character(k)," clases")
+#	plot(Psi[,1],Psi[,2],col=clases,main=title, xlab="Cost and duration of previous insurance", ylab = "Age of familiar unit")
+#     legend("topleft", c(paste("cluster",1:k)), pch=20, col=colors)
+#	#plot(Psi[,1],Psi[,2],col=k1$cluster,main=title, xlab="Cost and duration of previous insurance", ylab = "Age of familiar unit")
+#	axis(side=1, pos= 0, labels = F, col="black")
+#	axis(side=3, pos= 0, labels = F, col="black")
+#	axis(side=2, pos= 0, labels = F, col="black")
+#	axis(side=4, pos= 0, labels = F, col="black")
+#	# LETS COMPUTE THE DECOMPOSITION OF INERTIA
+#	Bss <- sum(rowSums(k1$centers^2)*k1$size)
+#	Bss
+#	Wss <- sum(k1$withinss)
+#	Wss
+#	Tss <- sum(rowSums(Psi^2))
+#	Tss
+#	Bss+Wss
+#	Ib1 <- 100*Bss/(Bss+Wss)
+#	Ib1
+#	cat (k, "classes: ",Bss," ", Wss, " ", Tss, " " , Bss+Wss, " ", Ib1, "\n")
+#}
 
-factors=data.frame(Psi, FI)
 
-objects(factors)
+# Hierarchical clustering
+result_hierarchical_clustering <- hclust(dist(factors), method="ward") # This is incredibly slow.
 
-# KMEANS RUN, BUT HOW MANY CLASSES?
+# Plot
+plot(result_hierarchical_clustering)
+save_plot("310_hierarchical_clustering.png")
 
-k1 <- kmeans(factors,5)
+# Determining the best cuts
+optimal_num_groups <- NULL
+height_joins       <- array(result_hierarchical_clustering$height)
+num_joins          <- nrow(height_joins)
+diff_height_cuts   <- height_joins[2:num_joins] - height_joins[1:(num_joins-1)]
+for (i in 1:3) {
+  aux_max_cut <- which.max(diff_height_cuts)
+  diff_height_cuts[aux_max_cut] <- 0
+  optimal_num_groups[i] <- num_joins - aux_max_cut + 1
+}
+optimal_num_groups <- array(optimal_num_groups)
+rm(height_joins, num_joins, diff_height_cuts, i, aux_max_cut)
 
-attributes(k1)
+# Ploting the points considering the best cuts:
+cardinals <- c("1st","2nd","3rd","4th","5th","6th","7th","8th","9th","10th","11th","12th","13th","14th","15th","16th","17th","18th","19th","20th")
+colors <- 1:max(optimal_num_groups) # these colors should be tunned too *_*
 
-k1$size
+for (i in 1:nrow(optimal_num_groups)) {
+  num_groups <- optimal_num_groups[i]
+  groups <- cutree(result_hierarchical_clustering, num_groups)
+  
+  cdg <- aggregate(as.data.frame(factors), list(groups), mean)[,2:(nd+1)]
+  Tss <- sum(rowSums(Psi^2))
+  Bss <- sum(rowSums(cdg^2)*as.numeric(table(groups)))
+  Ib4 <- 100*Bss/Tss
+  
+  legend("topleft",c("c1","c2","c3","c4"),pch=1,col=c(1:4))
+  for (axis_h in 1:(num_signif_dim-1)) {
+    for (axis_v in (axis_h+1):num_signif_dim)  {
+      plot(
+        Psi[,axis_h],
+        Psi[,axis_v],
+        pch = 20,
+        col = colors[groups],
+        main = paste("Hierarchical clustering in ",num_groups," classes (",cardinals[i]," best cut)", sep=""),
+        xlab = paste(cardinals[axis_h]," principal component", sep=""),
+        ylab = paste(cardinals[axis_v]," principal component", sep="") )
+      
+      mtext( paste("Decomposition of intertia = ",Ib4, sep="") )
+      
+      legend("topleft", c(paste("cluster",1:num_groups)), pch=20, col=colors[1:num_groups] )
+      
+      save_plot(paste("352_hierarchical_",num_groups,"groups_",i,"best_on_pc",axis_h,"_and_pc",axis_v,".png", sep=""))
+    }
+  }
+}
 
-k1$withinss
 
-k1$centers
+
+
+
+
 
 ###################################################################################################################################################
-######################################################## Lab 5 #######################################################
+######################################################## P-Value #######################################################
 ###################################################################################################################################################
 
-# LETS COMPUTE THE DECOMPOSITION OF INERTIA
-
-Bss <- sum(rowSums(k1$centers^2)*k1$size)
-Bss
-Wss <- sum(k1$withinss)
-Wss
-Tss <- sum(rowSums(Psi^2))
-Tss
-
-Bss+Wss
-
-Ib1 <- 100*Bss/(Bss+Wss)
-Ib1
-
-# LETS REPEAT THE KMEANS RUN WITH K=5
-
-k2 <- kmeans(factors,5)
-k2$size
-
-Bss <- sum(rowSums(k2$centers^2)*k2$size)
-Bss
-Wss <- sum(k2$withinss)
-Wss
-
-Ib2 <- 100*Bss/(Bss+Wss)
-Ib2
-
-# WHY WE HAVE OBTAINED DIFFERENT RESULTS?, AND WHICH RUN IS BETTER?
-
-# NOW TRY K=8
-
-k3 <- kmeans(factors,8)
-k3$size
-
-Bss <- sum(rowSums(k3$centers^2)*k3$size)
-Wss <- sum(k3$withinss)
-
-Ib3 <- 100*Bss/(Bss+Wss)
-Ib3
-
-
-# HIERARCHICAL CLUSTERING
-
-d  <- dist(factors)
-h1 <- hclust(d,method="ward")  # NOTICE THE COST
-plot(h1)
-
-# BUT WE ONLY NEED WHERE THERE ARE THE LEAPS OF THE HEIGHT
-
-# WHERE ARE THER THE LEAPS? WHERE WILL YOU CUT THE DENDREOGRAM?, HOW MANY CLASSES WILL YOU OBTAIN?
-
-nc = 4
-
-c1 <- cutree(h1,nc)
-
-c1[1:20] # Mostramos los 20 primeros individuos clasificados en tres grupos
-
-# LETS SEE THE PARTITION VISUALLY
-
-plot(Psi[,1],Psi[,2],col=c1,main="Clustering of insurance policy data in 4 classes")
-legend("topleft",c("c1","c2","c3","c4"),pch=1,col=c(1:4))
-
-#plot(FI[,1],FI[,2],col=c1,main="Clustering of credit data in 3 classes")
-#legend("topleft",c("c1","c2","c3"),pch=1,col=c(1:3))
-
-# LETS SEE THE QUALITY OF THE HIERARCHICAL PARTITION
-
-cdg <- aggregate(as.data.frame(factors),list(c1),mean)[,2:(nd+1)]
-cdg
-
-Bss <- sum(rowSums(cdg^2)*as.numeric(table(c1)))
-
-Ib4 <- 100*Bss/Tss
-Ib4
-
-# LETS CONSOLIDATE THE PARTITION
-
-k5 <- kmeans(Psi,centers=cdg)
-k5$size
-
-Bss <- sum(rowSums(k5$centers^2)*k5$size)
-Wss <- sum(k5$withinss)
-
-Ib5 <- 100*Bss/(Bss+Wss)
-Ib5
 
 #
-# CLUSTERING OF LARGE DATA SETS
+# FEATURE SELECTION: FOR CONTINUOUS VARIABLES  FISFER's F
+# RESPONSE VARIABLE: RISK FACTOR
 #
 
-# FIRST 2 KMEANS WITH K=14
+varc <- dcon
+pvalcon <- NULL
+for (i in 1:length(dcon)) { pvalcon[i] <- (oneway.test(varc[[i]]~data$risk_factor))$p.value }
 
-n1 = 14
+pvalcon = matrix(pvalcon)
+rownames(pvalcon) = colnames(varc)
 
-k1 <- kmeans(factors,n1)
-k2 <- kmeans(factors,n1)
+# ORDERED LIST OF CONTINUOUS VARIABLES ACCORDING THEIR DEPENDENCE OF RISK FACTOR
+sort(pvalcon[,1])
 
-table(k2$cluster,k1$cluster)
+#
+# FEATURE SELECTION: FOR CATEGORICAL VARIABLES  CHI-SQUARE
+# RESPONSE VARIABLE: RISK FACTOR
+#
 
-clas <- (k2$cluster-1)*n1+k1$cluster
+pvalcat <- NULL
+vark <- dcat
 
-freq <- table(clas)
-freq[1:10]
+for (i in 1:length(dcat)) { pvalcat[i] <- (chisq.test(vark[[i]],data$risk_factor))$p.value }
 
-# WHAT DO WE HAVE IN VECTOR freq?
-
-cdclas <- aggregate(as.data.frame(Psi),list(clas),mean)[,2:(nd+1)]
-
-# SECOND HIERARCHICAL CLUSTERING UPON THE CENTROIDS OF CROSSING THE 2 KMEANS PARTITIONS
-
-d2 <- dist(cdclas)
-h2 <- hclust(d2,method="ward",members=freq)  # COMPARE THE COST
-
-plot(h2)
-barplot(h2$height[(dim(cdclas)[1]-40):(dim(cdclas)[1]-1)])
-
-c2 <- cutree(h2,nc)
-
-# WARNING c2 NOT ALLOW TO CLASSIFY DIRECTLY THE 4446 INDIVIDUALS BUT THE ELEMENTS OF freq
-# WARNING cdclas CONTAINS THE COORDINATES OF THE CROSSINGS BUT THEY NEED TO BE WEIGHED BY  freq
-
-#cdg <- aggregate(cdclas,list(c2),mean)[,2:(nd+1)]  ALL ELEMENTS COUNT EQUAL
-
-cdg <- aggregate((diag(freq/sum(freq)) %*% as.matrix(cdclas)),list(c2),sum)[,2:(nd+1)]
-cdg
+pvalcat = matrix(pvalcat)
+rownames(pvalcat) = colnames(dcat)
 
 
-# CONSOLIDATION
 
-k6 <- kmeans(Psi,centers=cdg)
-k6$size
+# ORDERED LIST OF CATEGORICAL VARIABLES ACCORDING THEIR DEPENDENCE OF RISK FACTOR
 
-Bss <- sum(rowSums(k6$centers^2)*k6$size)
-Wss <- sum(k6$withinss)
+sort(pvalcat[,1])
 
-Ib6 <- 100*Bss/(Bss+Wss)
-Ib6
+#let's have a global look with the whole set of variables
+pval<-NULL
+pval=append(pvalcon, pvalcat)
+pval = matrix(pval)
+#WARNING ORDER OF VARIABLES
+row.names(pval)= append(row.names(pvalcon),row.names(pvalcat))
+sort(pval[,1])
 
 
-# PROBALISTIC CLUSTERING 
+#
+# WHICH VARIABLE CAN BE DISCARDED?
+#
 
-library(mclust)
+#Are the linearity hypothesis for oneway reasonable?
 
-emc <- Mclust(Psi,G=7:9) # AGAIN THE COST
+par(ask=TRUE)
+for (i in 1:length(varc)) { boxplot(varc[[i]]~data$risk_factor, main=paste(row.names(pvalcon)[i])) }
 
-print(emc)
+#No sense with two modalities
 
-attributes(emc)
 
-# NOW FOR EACH INDIVIDUAL WE HAVE A PROBABILITY TO BELONG TO EACH CLASS
 
-emc$z[1:10,]
+# NEVERTHELESS ALL EXPLANOTORY VARIABLES HAVE BEEN CHOSEN BY AN EXPERT (FROM HUNDREDS IN THE DB) !
 
-# LETS SEE TO WHICH CLASS IS ASSGINED EVERY INDIVIDUAL (BY MAX PROB)
 
-emc$classification[1:10]
+#
+# PROFILE OF RISK FACTOR
+#
 
-# LETS COMPUTE THE QUALITY OF THE PARTITION
+#
+# GRAPHICAL REPRESENTATION RISK FACTOR * CONTINUOUS VARIABLES
+#
 
-cdg <- aggregate(as.data.frame(Psi),list(emc$classification),mean)[,2:(nd+1)]
-cdg
+par(ask=TRUE)
 
-Bss <- sum(rowSums(cdg^2)*as.numeric(table(c1)))
+ncon <- nrow(pvalcon)
 
-Ib7 <- 100*Bss/Tss
-Ib7
+for (i in 1:ncon) {
+	barplot(tapply(varc[[i]], data$risk_factor, mean),main=paste("Means by",row.names(pvalcon)[i]))
+	abline(h=mean(varc[[i]]))
+	legend(0,mean(varc[[i]]),"global mean",bty="n") }
 
-# LETS SEE THE PARTITION VISUALLY
 
-plot(Psi[,1],Psi[,2],col=emc$classification,main="Clustering of credit data in 8 classes")
-legend("topleft",c("c1","c2","c3","c4","c5","c6","c7","c8"),pch=1,col=c(1:8))
+
+# Test the influence of the variable wrt the type of RISK FACTOR
+# PVALUE OF THE HYPOTHESIS TEST COMPARING THE MEAN OF THE GROUP WITH THE GLOBAL MEAN
+# WE DETECT POSITIVE DEVIATIONS ONLY
+#
+p.xk <- function(vec,fac){nk <- as.vector(table(fac)); n <- sum(nk); xk <- tapply(vec,fac,mean);
+           txk <- (xk-mean(vec))/(sd(vec)*sqrt((n-nk)/(n*nk))); pxk <- pt(txk,n-1,lower.tail=F)}
+#
+
+# FUNCTION 
+# PVALUE OF THE HYPOTHESIS TEST COMPARING THE PROPORTION OF THE GROUP WITHIN ONE MODALITY WITH THE GLOBAL PROPORTION OF THE GROUP
+#
+p.zkj <- function(resp,expl){taula <- table(resp,expl);n <- sum(taula); pk <- apply(taula,1,sum)/n;
+      pj <- apply(taula,2,sum)/n;pf <- taula/(n*pk);
+      pjm <- matrix(data=pj,nrow=dim(pf)[1],ncol=dim(pf)[2], byrow=T);      
+      dpf <- pf - pjm; dvt <- sqrt(((1-pk)/(n*pk))%*%t(pj*(1-pj))); zkj <- dpf/dvt; 
+      pzkj <- pnorm(zkj,lower.tail=F);
+      list(rowpf=pf,vtest=zkj,pval=pzkj)}
+
+nresp <- length(levels(data$risk_factor))
+
+pvalk.con <- matrix(NA,nresp,ncon)
+rownames(pvalk.con) <- levels(data$risk_factor)
+colnames(pvalk.con) <- row.names(pvalcon)
+
+
+for (i in 1:ncon) {
+	pvalk.con[,i] = p.xk(varc[[i]],data$risk_factor) }
+
+for (k in 1:nresp) { print(paste("P.values of Risk Factor:",levels(data$risk_factor)[k])); print(sort(pvalk.con[k,])) }
+
+
+#
+# GRAPHICAL REPRESENTATION RISK FACTOR * CATEGORICAL VARIABLES
+#
+
+#par(mfrow=c(1,3))
+
+par(ask=TRUE)
+
+n <- nrow(data)
+ncat <- nrow(pvalcat)
+
+
+
+for (i in 1:ncat) {
+
+	rowprof <- p.zkj(data$risk_factor,vark[[i]])$rowpf
+
+	marg <- table(vark[[i]])/n
+        print(append("Categories=",levels(vark[[i]])))
+	plot(marg,type="l",ylim=c(0,1),main=paste("Prop. of pos & neg by",row.names(pvalcat)[i]))
+	lines(rowprof[1,],col="blue")
+	lines(rowprof[2,],col="red")
+	legend("topright",c("pos","neg"),col=c("blue","red"),lty=1) 
+        }
+
+
+#par(mfrow=c(1,1))
+
+
+pvalk.cat = NULL
+
+for (i in 1:ncat) {	
+ 	auxpvalk <- p.zkj(data$risk_factor,vark[[i]])$pval 
+	pvalk.cat = cbind(pvalk.cat,auxpvalk) }
+
+for (k in 1:nresp) { print(paste("P.values of Risk Factor:",levels(data$risk_factor)[k])); print(sort(pvalk.cat[k,])) }
