@@ -250,6 +250,8 @@ rm(colors, i, axis_h, axis_v, column, name_column, range_h, range_v, cardinals)
 ######################################################## Lab 4: Feature selection & K-means #######################################################
 ###################################################################################################################################################
 
+source('clean_acm.r')
+
 # Spliting of qualitative and quantitative data:
 is_factor <- sapply(data, is.factor)
 data_qualitative  <- data[,is_factor]
@@ -413,6 +415,9 @@ for (i in 1:nrow(optimal_num_groups)) {
 # FEATURE SELECTION: FOR CONTINUOUS VARIABLES  FISFER's F
 # RESPONSE VARIABLE: RISK FACTOR
 #
+
+dcon <- data.frame ("Car_age" = data$car_age, "Age_oldest" = data$age_oldest, "Age_youngest" = data$age_youngest, "Duration_previous" = data$duration_previous, "Cost" = data$cost)
+pc1 = prcomp(dcon, scale=T)
 
 varc <- dcon
 pvalcon <- NULL
