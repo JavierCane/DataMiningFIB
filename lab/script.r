@@ -1,16 +1,16 @@
 #Insertar el path de donde se encuentre el archivo
-# setwd("/Users/javierferrer/Google Drive/Studies/02 MD/MD grupo/datos") # No necesario si abrimos fichero .R
+setwd("/Users/javierferrer/Documents/Uni/MD/") # No necesario si abrimos fichero .R
 
 #Modificar el nombre del archivo a conveniencia
 data <- read.table("data/state_varios-oldest_ge_45-youngest_le_27-5910_reg.csv",sep=";",header=TRUE)
+
 source('assets/clean_acm.r')
 
 # Function to save plots easily.
 save_plot <- function(file="plot.png", type=png, width=800, height=600, units="px", res=72) {
-  err <- dev.copy(type,file,width=height,height=height,units=units,res=res)
+  err <- dev.copy( type, paste( "results/", file, sep="" ), width=width, height=height, units=units, res=res )
   err <- dev.off()
 }
-
 
 ###################################################################################################################################################
 ################################################################ Lab 1: Data load #################################################################
@@ -250,8 +250,6 @@ rm(colors, i, axis_h, axis_v, column, name_column, range_h, range_v, cardinals)
 ###################################################################################################################################################
 ######################################################## Lab 4: Feature selection & K-means #######################################################
 ###################################################################################################################################################
-
-source('clean_acm.r')
 
 # Spliting of qualitative and quantitative data:
 is_factor <- sapply(data, is.factor)
