@@ -2,7 +2,8 @@
 # setwd("/Users/javierferrer/Google Drive/Studies/02 MD/MD grupo/datos") # No necesario si abrimos fichero .R
 
 #Modificar el nombre del archivo a conveniencia
-data <- read.table("/Users/javierferrer/Documents/Uni/MD/data/state_varios-oldest_ge_45-youngest_le_27-5910_reg.csv",sep=";",header=TRUE)
+data <- read.table("data/state_varios-oldest_ge_45-youngest_le_27-5910_reg.csv",sep=";",header=TRUE)
+source('assets/clean_acm.r')
 
 # Function to save plots easily.
 save_plot <- function(file="plot.png", type=png, width=800, height=600, units="px", res=72) {
@@ -162,9 +163,9 @@ rm(axis_h, axis_v, range_h, range_v, scale_arrows, aux_zeros)
 
 # 2nd plot (axis, arrows, centroids)
 ploted_classes <- c(3:5,7:8,11) # these should be choosen carefully!!!
-colors <- rainbow(ncol(data_qualitative)) # these colors should be tunned ;)
+#colors <- rainbow(ncol(data_qualitative)) # these colors should be tunned ;)
 #Another option (i think it's more visible)
-#colors <- c("orange", "brown","green", "darkgrey", "purple", "red", "orange", "darkgreen","green", "orange", "brown", "darkblue", "purple", "red", "darkgrey", "darkgreen")
+colors <- c("orange", "brown","green", "darkgrey", "purple", "red", "orange", "darkgreen","green", "orange", "brown", "darkblue", "purple", "red", "darkgrey", "darkgreen")
 for (axis_h in 1:(num_signif_dim-1)) {
   for (axis_v in (axis_h+1):num_signif_dim)  {
     range_h <- c(-1,1)
@@ -255,22 +256,22 @@ source('clean_acm.r')
 # Spliting of qualitative and quantitative data:
 is_factor <- sapply(data, is.factor)
 data_qualitative  <- data[,is_factor]
-#data_qualitative <- data.frame(data$record_type, data$group_size, data$day, data$homeowner, data$risk_factor, data$married_couple, data$C_previous, data$B, data$C, data$D, data$E, data$F, data$G)
+data_qualitative <- data_qualitative[,-1]
+data_qualitative <- data_qualitative[,-1]
+data_qualitative <- data_qualitative[,-1]
+data_qualitative <- data_qualitative[,-3]
+data_qualitative <- data_qualitative[,-5]
 data_quantitative <- data[,!is_factor]
 
 # Renaming, for convenience
 Psi <- points_projected_PCs
 
-# Determining the Target Variable (Dictamen)
-target_variable = data$risk_factor # This is a problem since we have a 5th class corresponding to NA's!
+# Determining the Target Variable (Risk Factor)
+target_variable <- data.frame(data$risk_factor) # This is a problem since we have a 5th class corresponding to NA's!
 
 # Performing the ACM analisis (what does "ACM" stands for?)
 # Anyone knows what is she doing here?
-#ac1 <- acm(data_qualitative, target_variable) # Please, lets use better names than "ac1". And this takes a lot of time.
-
-dcat <- data.frame(data$record_type, data$group_size, data$day, data$homeowner, data$risk_factor, data$married_couple, data$C_previous, data$B, data$C, data$D, data$E, data$F, data$G)
-dict <- data.frame(data$risk_factor)
-ac1 <- acm(dcat,dict)
+ac1 <- acm(data_qualitative, target_variable) # Please, lets use better names than "ac1". And this takes a lot of time.
 
 nd <- max( which(ac1$vaps > 1/ncol(data_qualitative)) )
 FI <- ac1$rs[,1:nd]
@@ -307,43 +308,44 @@ for (k in 4:4) {
   }
 }
 
-#Alternative (Jaume)
-#numclases <- c(3,4,5,6,8)
-#par(ask=TRUE)
-#for (i in 1:length(numclases)){
+#Alternative for the first two axis trying different numbers
+numclases <- c(3,4,5,6,8)
+par(ask=TRUE)
+axis_h <- 1
+axis_v <- 2
+for (i in 1:length(numclases)){
 	#Whereas k is the number of clases 
-#	k = numclases[i]
-#	k1 <- kmeans(factors,k)
-#	attributes(k1)
-#	k1$size
-#	k1$withinss
-#	k1$centers
-#	colors <- c("green", "orange", "brown", "darkblue", "purple", "red", "darkgrey", "darkgreen")
-#	clases <- rep(NA, length(data[,1]))
-#	for(j in 1:length(clases)){
-#		l <- k1$cluster[j]
-#		clases[j] <- colors[l]
-#	}
-#	title <- paste("Clustering of insurance policy data in ",as.character(k)," clases")
-#	plot(Psi[,1],Psi[,2],col=clases,main=title, xlab="Cost and duration of previous insurance", ylab = "Age of familiar unit")
-#     legend("topleft", c(paste("cluster",1:k)), pch=20, col=colors)
-#	#plot(Psi[,1],Psi[,2],col=k1$cluster,main=title, xlab="Cost and duration of previous insurance", ylab = "Age of familiar unit")
-#	axis(side=1, pos= 0, labels = F, col="black")
-#	axis(side=3, pos= 0, labels = F, col="black")
-#	axis(side=2, pos= 0, labels = F, col="black")
-#	axis(side=4, pos= 0, labels = F, col="black")
-#	# LETS COMPUTE THE DECOMPOSITION OF INERTIA
-#	Bss <- sum(rowSums(k1$centers^2)*k1$size)
-#	Bss
-#	Wss <- sum(k1$withinss)
-#	Wss
-#	Tss <- sum(rowSums(Psi^2))
-#	Tss
-#	Bss+Wss
-#	Ib1 <- 100*Bss/(Bss+Wss)
-#	Ib1
-#	cat (k, "classes: ",Bss," ", Wss, " ", Tss, " " , Bss+Wss, " ", Ib1, "\n")
-#}
+	k = numclases[i]
+	k1 <- kmeans(factors,k)
+	attributes(k1)
+	k1$size
+	k1$withinss
+	k1$centers
+	colors <- c("green", "orange", "brown", "darkblue", "purple", "red", "darkgrey", "darkgreen")
+	clases <- rep(NA, length(data[,1]))
+	for(j in 1:length(clases)){
+		l <- k1$cluster[j]
+		clases[j] <- colors[l]
+	}
+	title <- paste("Clustering of insurance policy data in ",as.character(k)," clases")
+	xaxislab <- paste(cardinals[axis_h]," principal component", sep="")
+	yaxislab <- paste(cardinals[axis_v]," principal component", sep="") 
+	plot(Psi[,axis_h],Psi[,axis_v],col=clases,main=title, xlab=xaxislab, ylab=yaxislab)
+     	legend("topleft", c(paste("cluster",1:k)), pch=20, col=colors)
+	# LETS COMPUTE THE DECOMPOSITION OF INERTIA
+	Bss <- sum(rowSums(k1$centers^2)*k1$size)
+	Bss
+	Wss <- sum(k1$withinss)
+	Wss
+	Tss <- sum(rowSums(Psi^2))
+	Tss
+	Bss+Wss
+	Ib1 <- 100*Bss/(Bss+Wss)
+	Ib1
+	cat (k, "classes: ",Bss," ", Wss, " ", Tss, " " , Bss+Wss, " ", Ib1, "\n")
+	mtext( paste("Decomposition of intertia = ",Ib1, sep="") )
+      save_plot(paste("299_kmeans_",k,"_on_pc",axis_h,"_and_pc",axis_v,".png", sep=""))
+}
 
 
 # Hierarchical clustering
@@ -416,6 +418,7 @@ for (i in 1:nrow(optimal_num_groups)) {
 # RESPONSE VARIABLE: RISK FACTOR
 #
 
+dcat <- data.frame(data$record_type, data$group_size, data$day, data$homeowner, data$risk_factor, data$married_couple, data$C_previous, data$A, data$B, data$C, data$D, data$E, data$F, data$G)
 dcon <- data.frame ("Car_age" = data$car_age, "Age_oldest" = data$age_oldest, "Age_youngest" = data$age_youngest, "Duration_previous" = data$duration_previous, "Cost" = data$cost)
 pc1 = prcomp(dcon, scale=T)
 
