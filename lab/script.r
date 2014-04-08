@@ -72,6 +72,20 @@ data$duration_previous[is.na(data$duration_previous)] = mean(data$duration_previ
 #data$duration_previous[is.na(data$duration_previous)] = knn(train, test, true_classifications_dp)
 #rm(data_without_dp, train, test, true_classifications_dp)
 
+columnes <- colnames(data)
+for(i in 1:length(data[1,])){
+	titol <- columnes[i]
+	plottype <- NULL
+	if (!is.factor(data[,i])){
+		plottype <- "boxplot"
+		boxplot(data[,i], main=titol)
+	}
+	else{
+		plottype <- "barplot"
+		plot(data[,i], main=titol)
+	}
+	save_plot(paste("087_",plottype,"_", titol ,".png"))
+}
 
 ###################################################################################################################################################
 ####################################################### Lab 3: Principal Component Analysis #######################################################
